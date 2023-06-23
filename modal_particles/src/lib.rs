@@ -11,7 +11,7 @@ const WORD_DICT1: [&'static str; 16] = [
     "嗯", "啊", "呜", "唔", "咿", "呼", "哈啊", "嗯啊", "呜啊", "咿啊", "呼啊", "呜嗯", "呜呜",
     "啊嗯", "啊啊", "咿呜",
 ];
-const WORD_DICT2: [&'static str; 5] = ["!", "...", "..", ".", "~"];
+const WORD_DICT2: [&'static str; 3] = ["!", "..", "~"];
 
 lazy_static! {
     static ref WORD2ID: HashMap<&'static str, usize> = {
