@@ -39,20 +39,27 @@ impl<W: Write> Encoder<W> {
 impl<W: Write> Write for Encoder<W> {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
         let mut idx=0usize;
+        let mut last=0u8;
         for byte in buf.iter() {
-            let (a, b) = (byte & 0xF, (byte >> 4) & 0xF);
+            let (mut ai,mut  bi) = (byte & 0xF, (byte >> 4) & 0xF);
+            let original_ai=ai;
+            ai^=last;
+            bi^=last;
+
             let (a, b) = (
-                ID2WORD.get(&(a as usize)).unwrap(),
-                ID2WORD.get(&(b as usize)).unwrap(),
+                ID2WORD.get(&(ai as usize)).unwrap(),
+                ID2WORD.get(&(bi as usize)).unwrap(),
             );
             self.writer.write_all(a.as_bytes())?;
             self.writer
                 .write_all(WORD_DICT2.get(idx).unwrap().as_bytes())?;
-            idx=(idx+1)%WORD_DICT2.len();
+            idx=(idx+ai as usize)%WORD_DICT2.len();
             self.writer.write_all(b.as_bytes())?;
             self.writer
                 .write_all(WORD_DICT2.get(idx).unwrap().as_bytes())?;
-            idx=(idx+1)%WORD_DICT2.len();
+
+            idx=(idx+bi as usize)%WORD_DICT2.len();
+            last=original_ai;
         }
         Ok(buf.len())
     }
@@ -100,9 +107,13 @@ impl<W: Write> Write for Decoder<W> {
             .collect();
         self.buffer.write_all(&u8_list)?;
 
+        let mut last=0u8;
         while self.buffer.len() >= 2 {
             let mut t: [u8; 2] = [0, 0];
             self.buffer.read(&mut t)?;
+            t[0]^=last;
+            t[1]^=last;
+            last=t[0];
             let t = t[0] | (t[1] << 4);
             self.writer.write(&[t])?;
         }
@@ -138,11 +149,12 @@ mod tests {
         let mut encoder = Encoder::new(Vec::new());
         encoder.write_all(s.as_bytes()).unwrap();
 
-        String::from_utf8(encoder.get_writer()).unwrap();
+        let _=String::from_utf8(encoder.get_writer()).unwrap();
+        // println!("{}",t)
     }
     #[test]
     fn decode() {
-        let s = "呼~啊啊...呜.呜啊...呜嗯.呜嗯...咿啊~啊啊!嗯~呜啊..呜呜...呜嗯...";
+        let s = "哈啊!啊啊!啊啊~啊啊..咿啊!啊!咿啊..咿呜..呜嗯..嗯!啊啊!呜啊~呜啊..唔!呼!呜呜~啊啊~咿啊..呼啊..嗯~呜呜~咿呜~唔~嗯~呜呜~呼~咿啊..咿呜..呼..呼!呜呜~呼~呼..啊啊!啊~呼啊!呜嗯..啊嗯!呜啊..嗯!呜呜!呜啊!呜啊~呜..呜呜!咿呜!呼!嗯~咿啊~唔~呜啊~咿呜..呜啊..哈啊!呜呜!呼啊!呜..唔!啊!嗯..咿呜..呼..咿啊!咿呜!啊啊!咿~";
         let mut decoder = Decoder::new(Vec::new());
         decoder.write_all(s.as_bytes()).unwrap();
 
