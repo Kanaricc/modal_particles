@@ -1,4 +1,5 @@
 [workspace]
 members=[
-    "modal_particles"
+    "modal_particles",
+    "modal_particles_wasm",
 ]

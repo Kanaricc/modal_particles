@@ -1,5 +1,4 @@
 use lazy_static::lazy_static;
-use rand::{seq::SliceRandom, thread_rng};
 use std::{
     collections::{HashMap, HashSet},
     io::{self, Read, Write},
@@ -39,7 +38,7 @@ impl<W: Write> Encoder<W> {
 
 impl<W: Write> Write for Encoder<W> {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        let mut rng = thread_rng();
+        let mut idx=0usize;
         for byte in buf.iter() {
             let (a, b) = (byte & 0xF, (byte >> 4) & 0xF);
             let (a, b) = (
@@ -48,10 +47,12 @@ impl<W: Write> Write for Encoder<W> {
             );
             self.writer.write_all(a.as_bytes())?;
             self.writer
-                .write_all(WORD_DICT2.choose(&mut rng).unwrap().as_bytes())?;
+                .write_all(WORD_DICT2.get(idx).unwrap().as_bytes())?;
+            idx=(idx+1)%WORD_DICT2.len();
             self.writer.write_all(b.as_bytes())?;
             self.writer
-                .write_all(WORD_DICT2.choose(&mut rng).unwrap().as_bytes())?;
+                .write_all(WORD_DICT2.get(idx).unwrap().as_bytes())?;
+            idx=(idx+1)%WORD_DICT2.len();
         }
         Ok(buf.len())
     }
