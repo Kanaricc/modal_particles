@@ -1,6 +1,6 @@
 # modal_particles
 
-> There are words in this world that we can speek, and there are words we cannot speek.
+> There are words in this world that we can speek, and there are words that cannot be expressed in words.
 >
 > *Guo*
 
