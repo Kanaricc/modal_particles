@@ -4,7 +4,7 @@
 >
 > *Guo*
 
-Encode your words into modal particles.
+Encode your words into modal particles. This project is for study and fun.
 
 ## modal_particles
 
